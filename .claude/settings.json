@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "Grep",
+      "Glob",
+      "Bash(npm:*)",
+      "Bash(node:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git restore:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git ls-files:*)",
+      "Bash(mkdir:*)",
+      "Bash(ls:*)",
+      "Bash(cat .cooperations/*)",
+      "Bash(cat specs/*)",
+      "Bash(cat docs/*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(rm -fr:*)",
+      "Bash(curl:* | sh)",
+      "Bash(curl:* | bash)",
+      "Bash(wget:* | sh)",
+      "Edit(.env.local)",
+      "Edit(.env)",
+      "Write(.env.local)",
+      "Write(.env)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node .claude/hooks/cooperation-init.mjs" },
+          { "type": "command", "command": "node .claude/hooks/env-check.mjs" }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node .claude/hooks/checkpoint-record.mjs" }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          { "type": "command", "command": "node .claude/hooks/specs-drift-guard.mjs" },
+          { "type": "command", "command": "node .claude/hooks/handoff-validator.mjs" }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "node .claude/hooks/pre-test.mjs" },
+          { "type": "command", "command": "node .claude/hooks/pre-deploy.mjs" },
+          { "type": "command", "command": "node .claude/hooks/no-secret-commit.mjs" }
+        ]
+      }
+    ]
+  }
+}

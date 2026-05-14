@@ -1,0 +1,10 @@
+# .cooperations/ runtime state
+# Commit the audit trail (tasks ledger + handoffs) but not per-run scratch.
+
+# Per-task evidence bundles can grow large; keep them out of git.
+evidence/
+
+# Scratch space for in-flight cooperation work.
+scratch/
+
+# Keep the directory structure (not the contents) for handoffs in fresh clones.

@@ -1,0 +1,40 @@
+{
+  "name": "cooperation-mob",
+  "version": "0.1.0",
+  "description": "Mob-programming cooperation workflow for Claude Code. Five-phase pipeline (plan → claude_review → plan_refine → implement → test → claude_final) with checkpoint gates (approve | revise | stop), role-based handoffs, and sandbox enforcement. Distilled from workspace/platform/cooperations and lab_tools/runner_pipeline.py.",
+  "license": "see parent project",
+  "components": {
+    "agents": [
+      "agents/mob-orchestrator.md",
+      "agents/mob-navigator.md"
+    ],
+    "skills": [
+      "skills/handoff-discipline/SKILL.md",
+      "skills/spec-drift-guard/SKILL.md",
+      "skills/smoke-path-mail/SKILL.md",
+      "skills/evidence-bundle/SKILL.md",
+      "skills/pipeline-phase/SKILL.md"
+    ],
+    "commands": [
+      "commands/cooperate.md",
+      "commands/handoff.md",
+      "commands/checkpoint.md",
+      "commands/cooperation-status.md"
+    ],
+    "rules": [
+      "rules/sandbox-discipline.md",
+      "rules/handoff-required.md"
+    ],
+    "hooks": [
+      "hooks/cooperation-init.mjs",
+      "hooks/checkpoint-record.mjs",
+      "hooks/handoff-validator.mjs"
+    ]
+  },
+  "provenance": {
+    "go_orchestrator": "workspace/platform/cooperations/",
+    "phase_pipeline": "lab_tools/runner_pipeline.py",
+    "smoke_path": "lab_tools/smoke.py",
+    "evidence_bundle": "lab_tools/evidence.py"
+  }
+}

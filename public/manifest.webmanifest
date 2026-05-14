@@ -1,0 +1,17 @@
+{
+  "name": "Conductor Mail",
+  "short_name": "Conductor",
+  "description": "AI-first universal email client",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f9f5",
+  "theme_color": "#2f6f64",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

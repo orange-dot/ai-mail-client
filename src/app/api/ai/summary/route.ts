@@ -1,14 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { getMessage, patchMessage } from "@/server/db/repository";
 import { apiError, requireAccess } from "@/server/http";
 import { summarizeMessage } from "@/server/ai/anthropic";
+
+const schema = z.object({
+  messageId: z.string().min(1)
+});
 
 export async function POST(request: NextRequest) {
   const accessError = requireAccess(request);
   if (accessError) return accessError;
 
   try {
-    const { messageId } = (await request.json()) as { messageId: string };
+    const { messageId } = schema.parse(await request.json());
     const message = await getMessage(messageId);
     if (!message) return apiError(new Error("Message not found"), 404);
 
@@ -16,6 +21,9 @@ export async function POST(request: NextRequest) {
     await patchMessage(message.id, { aiSummary: summary });
     return NextResponse.json({ summary });
   } catch (error) {
-    return apiError(error, 400);
+    if (error instanceof z.ZodError) {
+      return apiError(error, 400);
+    }
+    return apiError(error, 500);
   }
 }

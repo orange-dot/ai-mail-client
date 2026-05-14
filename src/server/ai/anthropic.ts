@@ -1,15 +1,16 @@
 import type { AiDraftRequest, AiDraftResponse, EmailMessage } from "@/lib/types";
 import { scorePriority } from "./priority";
+import { buildFallbackSummary } from "./summary-fallback";
 
 const model = process.env.ANTHROPIC_MODEL ?? "claude-3-5-sonnet-latest";
 
 export async function summarizeMessage(message: EmailMessage): Promise<string> {
   if (!process.env.ANTHROPIC_API_KEY) {
-    return fallbackSummary(message);
+    return buildFallbackSummary(message);
   }
 
   const text = await callAnthropic(
-    `Summarize this email in one concise sentence. Include the sender intent and deadline if present.\n\nSubject: ${message.subject}\nFrom: ${message.from.email}\nBody:\n${message.bodyText.slice(0, 6000)}`
+    `Summarize this email in one or two concise sentences. Identify the sender's intent, the specific action requested, and any deadline. If no action or deadline is present, say so briefly.\n\nSubject: ${message.subject}\nFrom: ${message.from.email}\nBody:\n${message.bodyText.slice(0, 6000)}`
   );
   return text.trim();
 }
@@ -70,11 +71,6 @@ async function callAnthropic(prompt: string): Promise<string> {
 
   const payload = (await response.json()) as { content?: Array<{ type: string; text?: string }> };
   return payload.content?.find((part) => part.type === "text")?.text ?? "";
-}
-
-function fallbackSummary(message: EmailMessage): string {
-  const sender = message.from.name ?? message.from.email;
-  return `${sender} wrote about "${message.subject}" and the key point is: ${message.snippet}`;
 }
 
 function fallbackDraft(request: AiDraftRequest): AiDraftResponse {

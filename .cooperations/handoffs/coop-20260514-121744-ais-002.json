@@ -1,0 +1,40 @@
+{
+  "task_id": "coop-20260514-121744-ais",
+  "timestamp": "2026-05-14T12:25:00Z",
+  "from_role": "architect",
+  "to_role": "reviewer",
+  "context": {
+    "task_description": "Re-derive AI Summary path Claude-driven",
+    "requirements": [
+      "audit plan.md for spec-drift, demo-mode-parity, security-token hygiene, AI-email-triage parity invariants",
+      "verify the plan does not propose any provider-adapter call from src/server/ai/* or src/app/api/ai/summary/*",
+      "verify the plan keeps the wire shape { summary: string } unchanged",
+      "verify no new env vars are required for demo mode"
+    ],
+    "constraints": [
+      "demo-mode parity preserved",
+      "no spec drift",
+      "read-only sandbox"
+    ],
+    "files_in_scope": [
+      ".cooperations/evidence/coop-20260514-121744-ais/plan.md",
+      "specs/product.md",
+      "specs/ai-features.md",
+      "specs/email-adapters.md",
+      "src/server/ai/anthropic.ts",
+      "src/server/ai/priority.ts",
+      "src/app/api/ai/summary/route.ts",
+      "src/app/api/ai/draft/route.ts"
+    ],
+    "sandbox": "read-only"
+  },
+  "artifacts": {
+    "produced": [],
+    "consumed": [".cooperations/evidence/coop-20260514-121744-ais/plan.md"]
+  },
+  "metadata": {
+    "phase": "claude_review",
+    "next_phase": "implement",
+    "next_checkpoint": "review_check"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "task_id": "coop-20260514-121744-ais",
+  "timestamp": "2026-05-14T12:55:00Z",
+  "from_role": "test-runner",
+  "to_role": "reviewer",
+  "context": {
+    "task_description": "Re-derive AI Summary path Claude-driven",
+    "requirements": [
+      "Final critique before merge.",
+      "Re-check the 6-bullet implement-phase watchlist from claude-review.md against the actual diff.",
+      "Run plan-vs-spec, security-token-handling, demo-mode-parity audits one more time.",
+      "Confirm test verdict is green and no UI/behavior surface was widened beyond the approved plan.",
+      "Produce claude-final-critique.md with final_check verdict (approve|revise|stop)."
+    ],
+    "constraints": [
+      "read-only across the repo",
+      "may only write .cooperations/evidence/coop-20260514-121744-ais/claude-final-critique.md"
+    ],
+    "files_in_scope": [
+      ".cooperations/evidence/coop-20260514-121744-ais/plan.md",
+      ".cooperations/evidence/coop-20260514-121744-ais/claude-review.md",
+      ".cooperations/evidence/coop-20260514-121744-ais/implement.md",
+      ".cooperations/evidence/coop-20260514-121744-ais/test-report.md",
+      "src/server/ai/anthropic.ts",
+      "src/server/ai/summary-fallback.ts",
+      "src/server/ai/anthropic.test.ts",
+      "src/server/ai/priority.ts",
+      "src/app/api/ai/summary/route.ts"
+    ],
+    "sandbox": "read-only"
+  },
+  "artifacts": {
+    "produced": [],
+    "consumed": [
+      ".cooperations/evidence/coop-20260514-121744-ais/plan.md",
+      ".cooperations/evidence/coop-20260514-121744-ais/claude-review.md",
+      ".cooperations/evidence/coop-20260514-121744-ais/implement.md",
+      ".cooperations/evidence/coop-20260514-121744-ais/test-report.md"
+    ]
+  },
+  "metadata": {
+    "phase": "claude_final",
+    "next_phase": "done",
+    "next_checkpoint": "final_check"
+  }
+}

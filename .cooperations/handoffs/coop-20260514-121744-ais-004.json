@@ -1,0 +1,42 @@
+{
+  "task_id": "coop-20260514-121744-ais",
+  "timestamp": "2026-05-14T12:45:00Z",
+  "from_role": "implementer",
+  "to_role": "test-runner",
+  "context": {
+    "task_description": "Re-derive AI Summary path Claude-driven",
+    "requirements": [
+      "Run the canonical smoke path for this project: npm run check",
+      "Heavy proof is not required: no UI change, e2e suite does not exercise summary today (per plan § Test plan and § Non-goals)",
+      "Confirm new test file src/server/ai/anthropic.test.ts ran and passed",
+      "Confirm src/server/ai/priority.test.ts still passes unchanged",
+      "Write test-report.md to evidence dir with green/red verdict and any failing test names"
+    ],
+    "constraints": [
+      "read-only on src/",
+      "may write under tests/ and .cooperations/evidence/coop-20260514-121744-ais/",
+      "do not edit src/ to make tests pass"
+    ],
+    "files_in_scope": [
+      ".cooperations/evidence/coop-20260514-121744-ais/plan.md",
+      ".cooperations/evidence/coop-20260514-121744-ais/claude-review.md",
+      ".cooperations/evidence/coop-20260514-121744-ais/implement.md",
+      "src/server/ai/anthropic.test.ts",
+      "src/server/ai/priority.test.ts"
+    ],
+    "sandbox": "read-only"
+  },
+  "artifacts": {
+    "produced": [],
+    "consumed": [
+      ".cooperations/evidence/coop-20260514-121744-ais/plan.md",
+      ".cooperations/evidence/coop-20260514-121744-ais/claude-review.md",
+      ".cooperations/evidence/coop-20260514-121744-ais/implement.md"
+    ]
+  },
+  "metadata": {
+    "phase": "test",
+    "next_phase": "claude_final",
+    "next_checkpoint": "final_check"
+  }
+}

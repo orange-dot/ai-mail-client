@@ -1,0 +1,78 @@
+{
+  "task_id": "coop-20260514-121744-ais",
+  "description": "Re-derive AI Summary path Claude-driven",
+  "completed_at": "2026-05-14T13:10:00Z",
+  "branch": "dev",
+  "base_commit": "8c44a94",
+  "specs_consulted": [
+    "specs/product.md",
+    "specs/ai-features.md",
+    "specs/email-adapters.md"
+  ],
+  "rules_consulted": [
+    ".claude/rules/specs-first.md",
+    ".claude/rules/sandbox-discipline.md",
+    ".claude/rules/handoff-required.md",
+    ".claude/rules/demo-mode-parity.md"
+  ],
+  "skills_consulted": [
+    ".claude/skills/ai-email-triage/SKILL.md",
+    ".claude/skills/handoff-discipline/SKILL.md",
+    ".claude/skills/smoke-path-mail/SKILL.md"
+  ],
+  "files_modified": [
+    {
+      "path": "src/server/ai/anthropic.ts",
+      "change": "modified",
+      "reason": "Tightened Anthropic summary prompt to enumerate sender intent + action + deadline; delegated fallback to buildFallbackSummary."
+    },
+    {
+      "path": "src/app/api/ai/summary/route.ts",
+      "change": "modified",
+      "reason": "Added zod input validation and 400/500 split via apiError. Response shape { summary } unchanged."
+    }
+  ],
+  "files_added": [
+    {
+      "path": "src/server/ai/summary-fallback.ts",
+      "reason": "Pure deterministic helpers (detectAction, detectDeadline, buildFallbackSummary). No I/O, no env reads."
+    },
+    {
+      "path": "src/server/ai/anthropic.test.ts",
+      "reason": "Vitest unit cases for the fallback path: deadline, action-no-deadline, digest."
+    }
+  ],
+  "files_unchanged_in_scope": [
+    "src/server/ai/priority.ts",
+    "src/server/ai/priority.test.ts"
+  ],
+  "files_out_of_scope_confirmed_untouched": [
+    "src/lib/types.ts",
+    "src/components/MailApp.tsx",
+    "src/server/db/repository.ts",
+    "src/server/db/schema.sql",
+    "src/app/api/ai/draft/route.ts",
+    "src/app/api/ai/prioritize/route.ts",
+    "specs/ai-features.md",
+    ".env.example",
+    "tests/e2e/inbox.spec.ts"
+  ],
+  "evidence_artifacts": [
+    ".cooperations/evidence/coop-20260514-121744-ais/plan.md",
+    ".cooperations/evidence/coop-20260514-121744-ais/claude-review.md",
+    ".cooperations/evidence/coop-20260514-121744-ais/implement.md",
+    ".cooperations/evidence/coop-20260514-121744-ais/test-report.md",
+    ".cooperations/evidence/coop-20260514-121744-ais/claude-final-critique.md"
+  ],
+  "handoffs": [
+    ".cooperations/handoffs/coop-20260514-121744-ais-001.json",
+    ".cooperations/handoffs/coop-20260514-121744-ais-002.json",
+    ".cooperations/handoffs/coop-20260514-121744-ais-003.json",
+    ".cooperations/handoffs/coop-20260514-121744-ais-004.json",
+    ".cooperations/handoffs/coop-20260514-121744-ais-005.json"
+  ],
+  "diff_stat": {
+    "src/app/api/ai/summary/route.ts": { "insertions": 10, "deletions": 2 },
+    "src/server/ai/anthropic.ts": { "insertions": 3, "deletions": 7 }
+  }
+}

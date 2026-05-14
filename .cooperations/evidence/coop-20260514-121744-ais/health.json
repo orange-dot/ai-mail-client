@@ -1,0 +1,43 @@
+{
+  "task_id": "coop-20260514-121744-ais",
+  "captured_at": "2026-05-14T13:10:00Z",
+  "smoke_path": {
+    "command": "npm run check",
+    "exit_code": 0,
+    "verdict": "green",
+    "unit_tests": { "files": 6, "passed": 14, "failed": 0, "skipped": 0 },
+    "new_tests_discovered": {
+      "src/server/ai/anthropic.test.ts": { "cases": 3, "passed": 3 }
+    },
+    "preserved_tests": {
+      "src/server/ai/priority.test.ts": { "cases": 2, "passed": 2, "file_unchanged": true }
+    },
+    "lint": "clean",
+    "typecheck": "clean"
+  },
+  "heavy_proof": {
+    "command": "npm run test:e2e",
+    "required": false,
+    "reason": "No UI change; tests/e2e/inbox.spec.ts does not exercise the summary path. Per plan § Test plan and § Non-goals."
+  },
+  "watchlist": {
+    "no_console_in_ai_paths": "pass",
+    "response_shape_locked": "pass",
+    "api_key_guard_first_statement": "pass",
+    "no_mail_adapter_import_in_ai_paths": "pass",
+    "priority_ts_byte_unchanged": "pass",
+    "npm_run_check_green": "pass"
+  },
+  "invariants": {
+    "demo_mode_parity": "pass",
+    "spec_drift": "pass",
+    "secret_leakage_audit": "pass",
+    "ai_send_mail_prohibited": "pass",
+    "env_var_delta": "none"
+  },
+  "deferred_observations": [
+    "prioritizeMessages has duplicated real-mode and fallback-mode branches doing identical work (pre-existing, out of scope).",
+    "detectAction returning the multi-word 'can you' would produce slightly awkward English in the fallback string; not exercised by current tests."
+  ],
+  "verdict": "approve"
+}

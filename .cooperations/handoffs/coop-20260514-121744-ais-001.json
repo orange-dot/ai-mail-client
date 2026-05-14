@@ -1,0 +1,29 @@
+{
+  "task_id": "coop-20260514-121744-ais",
+  "timestamp": "2026-05-14T12:17:44Z",
+  "from_role": "system",
+  "to_role": "architect",
+  "context": {
+    "task_description": "Re-derive AI Summary path Claude-driven",
+    "requirements": [],
+    "constraints": [
+      "demo-mode parity preserved",
+      "no spec drift"
+    ],
+    "files_in_scope": [
+      "specs/product.md",
+      "specs/email-adapters.md",
+      "specs/ai-features.md"
+    ],
+    "sandbox": "read-only"
+  },
+  "artifacts": {
+    "produced": [],
+    "consumed": []
+  },
+  "metadata": {
+    "phase": "plan",
+    "next_phase": "claude_review",
+    "next_checkpoint": "plan_check"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "task_id": "coop-20260514-121744-ais",
+  "timestamp": "2026-05-14T12:35:00Z",
+  "from_role": "reviewer",
+  "to_role": "implementer",
+  "context": {
+    "task_description": "Re-derive AI Summary path Claude-driven",
+    "implementer_agent": "ai-features",
+    "requirements": [
+      "Implement the plan as written at .cooperations/evidence/coop-20260514-121744-ais/plan.md",
+      "Honor the 6-bullet implement-phase watchlist at .cooperations/evidence/coop-20260514-121744-ais/claude-review.md",
+      "Declare in implement evidence which helper-housing path was chosen (shared language-signals.ts vs. duplicated arrays); if extracted, prove priority.test.ts unchanged"
+    ],
+    "constraints": [
+      "demo-mode parity preserved",
+      "no spec drift",
+      "no new console.* in src/server/ai/* or src/app/api/ai/*",
+      "wire shape stays { summary: string }",
+      "no MailProviderAdapter import inside src/server/ai/* or src/app/api/ai/summary/*",
+      "no new required env vars",
+      "AI must not send mail"
+    ],
+    "files_in_scope": [
+      "src/server/ai/anthropic.ts",
+      "src/server/ai/summary-fallback.ts",
+      "src/server/ai/anthropic.test.ts",
+      "src/server/ai/language-signals.ts",
+      "src/server/ai/priority.ts",
+      "src/app/api/ai/summary/route.ts"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "artifacts": {
+    "produced": [],
+    "consumed": [
+      ".cooperations/evidence/coop-20260514-121744-ais/plan.md",
+      ".cooperations/evidence/coop-20260514-121744-ais/claude-review.md"
+    ]
+  },
+  "metadata": {
+    "phase": "implement",
+    "next_phase": "test",
+    "next_checkpoint": "(none until claude_final)"
+  }
+}

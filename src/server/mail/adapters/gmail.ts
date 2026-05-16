@@ -3,23 +3,33 @@ import { buildMimeMessage, encodeBase64Url } from "../mime";
 import type { MailProviderAdapter } from "./types";
 
 type GmailHeader = { name: string; value: string };
+
+type GmailPart = {
+  mimeType?: string;
+  filename?: string;
+  headers?: GmailHeader[];
+  body?: { data?: string };
+  parts?: GmailPart[];
+};
+
 type GmailMessage = {
   id: string;
   threadId: string;
   labelIds?: string[];
   snippet?: string;
   internalDate?: string;
-  payload?: {
-    headers?: GmailHeader[];
-    body?: { data?: string };
-    parts?: Array<{ mimeType?: string; body?: { data?: string }; filename?: string }>;
-  };
+  payload?: GmailPart;
 };
 
 export class GmailAdapter implements MailProviderAdapter {
   provider = "gmail" as const;
 
-  constructor(private readonly accountId: string, private readonly accessToken: string, private readonly from: MailAddress) {}
+  constructor(
+    private readonly accountId: string,
+    private accessToken: string,
+    private readonly from: MailAddress,
+    private readonly refreshAccessToken?: () => Promise<string>
+  ) {}
 
   async listMessages(options: { query?: string; label?: string; limit?: number } = {}): Promise<EmailMessage[]> {
     const url = new URL("https://gmail.googleapis.com/gmail/v1/users/me/messages");
@@ -88,7 +98,23 @@ export class GmailAdapter implements MailProviderAdapter {
   }
 
   private async request<T>(url: string, init: RequestInit = {}): Promise<T> {
-    const response = await fetch(url, {
+    let response = await this.authedFetch(url, init);
+
+    // One refresh-and-retry on a 401: the access token has most likely expired.
+    // The refresh callback owns decrypting the refresh token and persisting the
+    // rotated credential; it never returns or logs token material. A single
+    // retry only — a second 401 falls through to the throw below.
+    if (response.status === 401 && this.refreshAccessToken) {
+      this.accessToken = await this.refreshAccessToken();
+      response = await this.authedFetch(url, init);
+    }
+
+    if (!response.ok) throw new Error(`Gmail API ${response.status}`);
+    return response.json() as Promise<T>;
+  }
+
+  private authedFetch(url: string, init: RequestInit): Promise<Response> {
+    return fetch(url, {
       ...init,
       headers: {
         authorization: `Bearer ${this.accessToken}`,
@@ -96,16 +122,16 @@ export class GmailAdapter implements MailProviderAdapter {
         ...init.headers
       }
     });
-
-    if (!response.ok) throw new Error(`Gmail API ${response.status}`);
-    return response.json() as Promise<T>;
   }
 }
 
 export function normalizeGmailMessage(accountId: string, raw: GmailMessage): EmailMessage {
   const headers = new Map((raw.payload?.headers ?? []).map((header) => [header.name.toLowerCase(), header.value]));
-  const labels = raw.labelIds?.map((label) => label.toLowerCase()) ?? [];
-  const bodyText = decodeGmailBody(raw);
+  // Gmail label IDs are case-sensitive opaque tokens (INBOX, UNREAD, TRASH,
+  // IMPORTANT, Label_123). They are stored verbatim so they round-trip through
+  // applyLabel/removeLabel, which send label.id straight to the Gmail API.
+  const labels = raw.labelIds ?? [];
+  const { bodyText, bodyHtml } = decodeGmailContent(raw);
   const receivedAt = raw.internalDate ? new Date(Number(raw.internalDate)).toISOString() : new Date().toISOString();
 
   return {
@@ -120,28 +146,77 @@ export function normalizeGmailMessage(accountId: string, raw: GmailMessage): Ema
     receivedAt,
     snippet: raw.snippet ?? bodyText.slice(0, 160),
     bodyText,
+    bodyHtml,
     labels,
     flags: {
-      unread: labels.includes("unread"),
-      archived: !labels.includes("inbox"),
-      deleted: labels.includes("trash")
+      unread: labels.includes("UNREAD"),
+      archived: !labels.includes("INBOX"),
+      deleted: labels.includes("TRASH")
     },
-    priority: labels.includes("important") ? "high" : "normal"
+    priority: labels.includes("IMPORTANT") ? "high" : "normal"
   };
 }
 
-function decodeGmailBody(raw: GmailMessage): string {
-  const direct = raw.payload?.body?.data;
-  const textPart = raw.payload?.parts?.find((part) => part.mimeType === "text/plain" && part.body?.data);
-  const data = direct ?? textPart?.body?.data;
-  if (!data) return raw.snippet ?? "";
-  return Buffer.from(data, "base64url").toString("utf8");
+// Walks the MIME tree. Gmail nests text/plain and text/html parts inside
+// multipart/alternative, often under an outer multipart/mixed. Prefers a
+// plain-text part at any depth; falls back to a tag-stripped HTML part, then
+// the direct (non-multipart) payload body, then the snippet.
+function decodeGmailContent(raw: GmailMessage): { bodyText: string; bodyHtml?: string } {
+  const htmlPart = findPart(raw.payload, "text/html");
+  const plainPart = findPart(raw.payload, "text/plain");
+  const bodyHtml = htmlPart ? decodePartData(htmlPart) : undefined;
+
+  let bodyText = plainPart ? decodePartData(plainPart) ?? "" : "";
+  if (!bodyText && bodyHtml) bodyText = htmlToText(bodyHtml);
+  if (!bodyText) {
+    const direct = raw.payload?.body?.data;
+    bodyText = direct ? Buffer.from(direct, "base64url").toString("utf8") : raw.snippet ?? "";
+  }
+
+  return { bodyText, bodyHtml };
+}
+
+function findPart(part: GmailPart | undefined, mimeType: string): GmailPart | undefined {
+  if (!part) return undefined;
+  if (part.mimeType === mimeType && part.body?.data) return part;
+  for (const child of part.parts ?? []) {
+    const found = findPart(child, mimeType);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+function decodePartData(part: GmailPart): string | undefined {
+  const data = part.body?.data;
+  return data ? Buffer.from(data, "base64url").toString("utf8") : undefined;
+}
+
+function htmlToText(html: string): string {
+  return html
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function parseAddress(value: string): MailAddress {
   const match = value.match(/^(?:"?([^"<]*)"?)?\s*<?([^<>@\s]+@[^<>\s]+)>?$/);
   if (!match) return { email: value || "unknown@example.invalid" };
-  return { name: match[1]?.trim() || undefined, email: match[2] };
+  const name = match[1]?.trim();
+  // RFC 2047 encoded-word display names (=?UTF-8?B?...?=) are dropped rather
+  // than shown raw; decoding them correctly needs charset-aware MIME handling.
+  return { name: name && !isEncodedWord(name) ? name : undefined, email: match[2] };
+}
+
+function isEncodedWord(value: string): boolean {
+  return /=\?[^?]+\?[BQbq]\?[^?]*\?=/.test(value);
 }
 
 function splitAddresses(value: string): MailAddress[] {

@@ -16,9 +16,18 @@ export async function GET(request: NextRequest, { params }: Params) {
     }
 
     const url = new URL(request.url);
+    const cookieStore = await cookies();
+
+    // The provider redirects here with ?error=access_denied when the user
+    // declines consent (or the request is rejected). That is a clean outcome,
+    // not a 400. The error_description is never logged.
+    if (url.searchParams.get("error")) {
+      cookieStore.delete("oauth_state");
+      return NextResponse.redirect(`${getAppUrl()}/?connected=denied`);
+    }
+
     const code = url.searchParams.get("code");
     const state = url.searchParams.get("state");
-    const cookieStore = await cookies();
     const expectedState = cookieStore.get("oauth_state")?.value;
 
     if (!code || !state || state !== expectedState) {

@@ -1,0 +1,74 @@
+{
+  "task_id": "coop-20260514-131621-gml",
+  "timestamp": "2026-05-14T13:16:21Z",
+  "from_role": "system",
+  "to_role": "architect",
+  "context": {
+    "task_description": "End-to-end verify Gmail integration against user's personal account; produce OAuth-app setup checklist; fix gaps; demo-mode parity preserved.",
+    "user_choices": {
+      "scope": "end-to-end verify + fix gaps",
+      "oauth_app_state": "not registered; planner produces setup checklist in plan.md",
+      "parity_rule_lift": "user explicitly authorizes a one-cooperation lift of the .claude/rules/demo-mode-parity.md deferral on 'real Gmail OAuth app registration' for this cooperation"
+    },
+    "requirements": [
+      "Audit the existing Gmail integration (adapter, OAuth helper, connect routes, account-list route, MIME builder) as it stands at base commit 789b351 and identify gaps for an end-to-end real-account run.",
+      "Produce a concrete OAuth-app setup checklist the user can follow in Google Cloud Console: scopes, redirect URIs, consent screen, where to paste client_id/secret. Cite the actual redirect URI implied by src/app/api/connect/[provider]/callback/route.ts.",
+      "Plan must enumerate which adapter operations will be exercised against the real account (list, get, send, reply, archive, label, delete) and how the test-runner / implementer will surface failures without leaking tokens or message bodies.",
+      "Plan must define the demo-mode parity invariant precisely for this cooperation: DEMO_MODE=true with empty GOOGLE_CLIENT_ID/SECRET must keep working unchanged.",
+      "Plan must identify any specs/email-adapters.md drift between what the spec authorizes and what the adapter currently does; flag any spec edit needed before implement."
+    ],
+    "constraints": [
+      "demo-mode parity preserved (DEMO_MODE=true + no Google creds = app still fully usable)",
+      "no spec drift; if spec edit is needed it must be called out in plan.md and approved at plan_check",
+      "no token leakage in logs (OAuth access/refresh tokens, message bodies, client_secret never logged)",
+      "AI must not send mail (existing invariant; carries over)",
+      "implement phase will be email-integration agent; AI-features and frontend-ux not in scope",
+      "TOKEN_ENCRYPTION_KEY is the encryption boundary for stored refresh tokens; preserve usage"
+    ],
+    "files_in_scope_for_reading": [
+      "specs/product.md",
+      "specs/email-adapters.md",
+      ".claude/rules/specs-first.md",
+      ".claude/rules/sandbox-discipline.md",
+      ".claude/rules/handoff-required.md",
+      ".claude/rules/demo-mode-parity.md",
+      ".claude/skills/provider-adapter-design/SKILL.md",
+      ".claude/skills/security-token-review/SKILL.md",
+      "src/server/mail/adapters/types.ts",
+      "src/server/mail/adapters/gmail.ts",
+      "src/server/mail/adapters/normalization.test.ts",
+      "src/server/mail/mime.ts",
+      "src/server/mail/mime.test.ts",
+      "src/server/mail/provider-registry.ts",
+      "src/server/auth/oauth.ts",
+      "src/server/security/crypto.ts",
+      "src/app/api/connect/[provider]/route.ts",
+      "src/app/api/connect/[provider]/callback/route.ts",
+      "src/app/api/accounts/route.ts",
+      "src/app/api/accounts/imap/route.ts",
+      "src/app/api/mail/route.ts",
+      "src/app/api/mail/[id]/route.ts",
+      "src/app/api/mail/send/route.ts",
+      ".env.example",
+      "next.config.mjs"
+    ],
+    "files_likely_in_scope_for_implementer": [
+      "src/server/mail/adapters/gmail.ts",
+      "src/server/auth/oauth.ts",
+      "src/app/api/connect/[provider]/route.ts",
+      "src/app/api/connect/[provider]/callback/route.ts",
+      "src/app/api/accounts/route.ts",
+      "src/server/security/crypto.ts (only if a real bug is found)"
+    ],
+    "sandbox": "read-only"
+  },
+  "artifacts": {
+    "produced": [],
+    "consumed": []
+  },
+  "metadata": {
+    "phase": "plan",
+    "next_phase": "claude_review",
+    "next_checkpoint": "plan_check"
+  }
+}

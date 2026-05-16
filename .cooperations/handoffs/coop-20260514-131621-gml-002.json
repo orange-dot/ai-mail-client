@@ -1,0 +1,42 @@
+{
+  "task_id": "coop-20260514-131621-gml",
+  "timestamp": "2026-05-14T13:30:00Z",
+  "from_role": "architect",
+  "to_role": "reviewer",
+  "context": {
+    "task_description": "End-to-end verify Gmail integration against user's personal account; produce OAuth-app setup checklist; fix gaps; demo-mode parity preserved.",
+    "requirements": [
+      "Audit plan.md for plan-vs-spec drift, demo-mode-parity, security-token-handling, provider-adapter-design.",
+      "Specifically evaluate the four planner-flagged decisions where the reviewer is invited to disagree: G1 (in-memory persistence fallback in repository.ts), G2-b (verify-only diagnostic route /api/mail/live), G8 (revert label lowercasing), G9 (refresh-on-401 wiring through registry callback).",
+      "Verify the OAuth-app setup checklist in Section 2 cites code (oauth.ts:14-20 for scopes, oauth.ts:24-30 + callback route for redirect URI) and does not invent scopes or URIs.",
+      "Verify the gap list is bounded; no scope creep into Microsoft/IMAP/AI/UI/deploy/Postgres.",
+      "Verify each FIX has a spec line in Section 7. Reject any drift.",
+      "Confirm acceptance criterion #2 (real Gmail verify) is recognized as user-action-gated — implement can land code but final_check cannot close until the user runs the manual smoke."
+    ],
+    "constraints": [
+      "read-only sandbox",
+      "may only write .cooperations/evidence/coop-20260514-131621-gml/claude-review.md"
+    ],
+    "files_in_scope": [
+      ".cooperations/evidence/coop-20260514-131621-gml/plan.md",
+      "specs/product.md",
+      "specs/email-adapters.md",
+      "src/server/mail/adapters/gmail.ts",
+      "src/server/auth/oauth.ts",
+      "src/server/db/repository.ts",
+      "src/app/api/connect/[provider]/callback/route.ts",
+      "src/server/mail/provider-registry.ts",
+      ".env.example"
+    ],
+    "sandbox": "read-only"
+  },
+  "artifacts": {
+    "produced": [],
+    "consumed": [".cooperations/evidence/coop-20260514-131621-gml/plan.md"]
+  },
+  "metadata": {
+    "phase": "claude_review",
+    "next_phase": "implement",
+    "next_checkpoint": "review_check"
+  }
+}

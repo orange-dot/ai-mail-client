@@ -16,7 +16,18 @@ function demoMode(): boolean {
   return process.env.DEMO_MODE === "true" || !process.env.POSTGRES_URL;
 }
 
+// Real mode (DEMO_MODE explicitly "false") without a provisioned Postgres URL.
+// Connected accounts then live in-process so a Gmail OAuth connection can be
+// verified end-to-end without standing up a database. Demo mode (DEMO_MODE
+// "true", or unset) is unaffected and still returns demo data.
+function realModeNoPostgres(): boolean {
+  return process.env.DEMO_MODE === "false" && !process.env.POSTGRES_URL;
+}
+
+const memoryAccounts = new Map<string, StoredAccount>();
+
 export async function listAccounts(): Promise<StoredAccount[]> {
+  if (realModeNoPostgres()) return [...memoryAccounts.values()];
   if (demoMode()) return demoAccounts;
 
   const result = await sql`
@@ -45,6 +56,10 @@ export async function saveAccount(account: SaveAccountInput): Promise<StoredAcco
     unreadCount: account.unreadCount ?? 0
   };
 
+  if (realModeNoPostgres()) {
+    memoryAccounts.set(stored.id, stored);
+    return stored;
+  }
   if (demoMode()) return stored;
 
   await sql`

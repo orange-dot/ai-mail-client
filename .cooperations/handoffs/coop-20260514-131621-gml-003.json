@@ -1,0 +1,51 @@
+{
+  "task_id": "coop-20260514-131621-gml",
+  "timestamp": "2026-05-15T10:30:00Z",
+  "from_role": "reviewer",
+  "to_role": "implementer",
+  "context": {
+    "task_description": "End-to-end verify Gmail integration against user's personal account; produce OAuth-app setup checklist; fix gaps; demo-mode parity preserved.",
+    "implementer_agent": "email-integration",
+    "review_verdict": "review_check approve",
+    "requirements": [
+      "Implement gap fixes G1, G3, G4, G5, G8, G9, G10, G12 and the G2-b diagnostic route per plan.md Section 5.",
+      "C1 (binding): G8 must update ALL FOUR label-derived expressions in normalizeGmailMessage (gmail.ts:125 unread->UNREAD, :126 archived->INBOX, :127 deleted->TRASH, :129 priority->IMPORTANT). Add normalization.test.ts cases covering TRASH and IMPORTANT in raw Gmail casing.",
+      "C2 (binding): repository.ts demo-mode parity - add a distinct realModeNoPostgres predicate; the DEMO_MODE===true early-return branches in listAccounts and saveAccount must remain literally unchanged.",
+      "C3 (binding): G9 refresh write-back routes through saveAccount; single retry only; no token text in errors/logs; keep server/mail + server/auth console-free.",
+      "C4 (binding): /api/mail/live carries an in-code 'verify-only, do not deploy' comment; evidence-grade redaction (counts, IDs, sender email only - no bodies/headers/tokens).",
+      "C5 (advisory): /api/mail still serves demo messages under DEMO_MODE=false && !POSTGRES_URL - state plainly in manual-smoke.md and the user-facing summary.",
+      "C6 (advisory): G3 is dead-code hardening (the {email:'me'} fallback is currently unreachable) - do not author a test pretending to exercise a live malformed-send.",
+      "C7 (binding, process): acceptance #2 is user-action-gated - land code, surface the Section 2 checklist to the user, then pause before final_check for the user-run Section 3 manual smoke.",
+      "C8 (advisory): citation/wording tidy-ups - see claude-review.md.",
+      "No spec edit. No MailProviderAdapter interface change. No SDK import outside adapters/*."
+    ],
+    "constraints": [
+      "workspace-write sandbox",
+      "files-in-scope per plan.md Section 5 only",
+      "files explicitly NOT in scope: microsoft.ts, imap.ts, mime.ts, MailApp.tsx, api/ai/*, demo-data.ts, next.config.mjs, vercel.json, package.json, specs/*, crypto.ts"
+    ],
+    "files_in_scope": [
+      "src/server/db/repository.ts",
+      "src/server/auth/oauth.ts",
+      "src/server/mail/adapters/gmail.ts",
+      "src/server/mail/adapters/normalization.test.ts",
+      "src/server/mail/provider-registry.ts",
+      "src/app/api/connect/[provider]/callback/route.ts",
+      "src/app/api/mail/live/route.ts",
+      ".env.example"
+    ],
+    "sandbox": "workspace-write"
+  },
+  "artifacts": {
+    "produced": [".cooperations/evidence/coop-20260514-131621-gml/claude-review.md"],
+    "consumed": [
+      ".cooperations/evidence/coop-20260514-131621-gml/plan.md",
+      ".cooperations/evidence/coop-20260514-131621-gml/claude-review.md"
+    ]
+  },
+  "metadata": {
+    "phase": "implement",
+    "next_phase": "test",
+    "next_checkpoint": "final_check"
+  }
+}

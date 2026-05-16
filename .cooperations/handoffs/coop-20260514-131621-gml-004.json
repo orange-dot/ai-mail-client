@@ -1,0 +1,35 @@
+{
+  "task_id": "coop-20260514-131621-gml",
+  "timestamp": "2026-05-15T12:10:00Z",
+  "from_role": "implementer",
+  "to_role": "test-runner",
+  "context": {
+    "task_description": "End-to-end verify Gmail integration against user's personal account; produce OAuth-app setup checklist; fix gaps; demo-mode parity preserved.",
+    "review_verdict": "review_check approve",
+    "requirements": [
+      "Run npm run check (lint + typecheck + vitest) - must be green.",
+      "Run npm run test:e2e (Playwright mobile + desktop, demo data) - must be green; this is the demo-mode-parity gate.",
+      "Confirm the new normalization.test.ts cases for TRASH and IMPORTANT exist and pass (C1 enforcement - they cover flags.deleted and priority, which had no prior assertion).",
+      "Grep the implement diff for console.* additions in server/mail + server/auth and for token-adjacent strings (plan section 8 risk 1).",
+      "The real-Gmail manual smoke (acceptance criterion #2, plan section 3) is user-action-gated and is NOT part of the test phase - do not attempt it."
+    ],
+    "constraints": [
+      "read-only on src",
+      "may write under tests/ and .cooperations/evidence/coop-20260514-131621-gml/test-report.md"
+    ],
+    "sandbox": "read-only"
+  },
+  "artifacts": {
+    "produced": [".cooperations/evidence/coop-20260514-131621-gml/implement.md"],
+    "consumed": [
+      ".cooperations/evidence/coop-20260514-131621-gml/plan.md",
+      ".cooperations/evidence/coop-20260514-131621-gml/claude-review.md",
+      ".cooperations/evidence/coop-20260514-131621-gml/implement.md"
+    ]
+  },
+  "metadata": {
+    "phase": "test",
+    "next_phase": "claude_final",
+    "next_checkpoint": "final_check"
+  }
+}

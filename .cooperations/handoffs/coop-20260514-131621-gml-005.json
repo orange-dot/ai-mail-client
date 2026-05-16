@@ -1,0 +1,39 @@
+{
+  "task_id": "coop-20260514-131621-gml",
+  "timestamp": "2026-05-16T13:30:00Z",
+  "from_role": "test-runner",
+  "to_role": "reviewer",
+  "context": {
+    "task_description": "End-to-end verify Gmail integration against user's personal account; produce OAuth-app setup checklist; fix gaps; demo-mode parity preserved.",
+    "test_verdict": "GREEN",
+    "summary": [
+      "npm run check: GREEN - eslint clean, tsc --noEmit clean, vitest 18/18 passed (6 files); normalization.test.ts 2 -> 6 tests.",
+      "npm run test:e2e: GREEN in canonical demo-mode config (DEMO_MODE=true, ANTHROPIC_API_KEY unset) - 3 passed, 1 skipped (mobile variant of desktop-only test, skipped by design).",
+      "AI fallback path verified directly: /api/ai/draft and /api/ai/summary return 200 with deterministic output when ANTHROPIC_API_KEY is unset.",
+      "Token hygiene: no console.* added in src/server/mail, src/server/auth, or the connect callback route; no raw secret literals in the diff.",
+      "Environment caveat (NOT a code defect, out of scope): with the real .env.local ANTHROPIC_API_KEY present, the AI routes hit the live Anthropic API which returns 400 - underlying reason is 'credit balance too low'. Independent of the Gmail diff; does not break demo-mode parity (parity requires the key-unset fallback path, which is GREEN)."
+    ],
+    "requirements_for_claude_final": [
+      "Audit the Gmail-integration diff against plan.md and claude-review.md conditions C1-C8.",
+      "Confirm demo-mode parity holds (the test phase proved the e2e + AI fallback path GREEN with credentials omitted).",
+      "Per review condition C7, pause before final_check: acceptance criterion #2 (real Gmail end-to-end smoke) is user-action-gated and needs the OAuth setup checklist (plan.md section 2) handed to the user before sign-off.",
+      "Note that repository.ts realModeNoPostgres()/memoryAccounts branches are inert under DEMO_MODE=true and were exercised only by typecheck/unit tests, not e2e."
+    ],
+    "constraints": ["read-only across the repo"],
+    "sandbox": "read-only"
+  },
+  "artifacts": {
+    "produced": [".cooperations/evidence/coop-20260514-131621-gml/test-report.md"],
+    "consumed": [
+      ".cooperations/evidence/coop-20260514-131621-gml/plan.md",
+      ".cooperations/evidence/coop-20260514-131621-gml/claude-review.md",
+      ".cooperations/evidence/coop-20260514-131621-gml/implement.md",
+      ".cooperations/evidence/coop-20260514-131621-gml/test-report.md"
+    ]
+  },
+  "metadata": {
+    "phase": "claude_final",
+    "next_phase": "done",
+    "next_checkpoint": "final_check"
+  }
+}

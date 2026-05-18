@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { draftReply } from "@/server/ai/anthropic";
+import { resolveAnthropicKey } from "@/server/config/session-credentials";
 import { getMessage } from "@/server/db/repository";
 import { apiError, requireAccess } from "@/server/http";
 
@@ -19,7 +20,10 @@ export async function POST(request: NextRequest) {
     const message = await getMessage(body.messageId);
     if (!message) return apiError(new Error("Message not found"), 404);
 
-    const draft = await draftReply({ message, tone: body.tone, instruction: body.instruction });
+    const draft = await draftReply(
+      { message, tone: body.tone, instruction: body.instruction },
+      await resolveAnthropicKey()
+    );
     return NextResponse.json({ draft });
   } catch (error) {
     return apiError(error, 400);

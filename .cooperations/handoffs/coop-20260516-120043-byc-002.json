@@ -1,0 +1,29 @@
+{
+  "task_id": "coop-20260516-120043-byc",
+  "timestamp": "2026-05-16T12:00:43Z",
+  "from_role": "architect",
+  "to_role": "reviewer",
+  "context": {
+    "task_description": "Bring-your-own-credentials for the deployed demo: graceful missing-credential handling + in-app entry of Google OAuth client ID/secret and Anthropic API key, encrypted per-browser cookie, no DB, demo-mode parity preserved.",
+    "plan_verdict": "plan_check approve (user-approved)",
+    "review_focus": [
+      "security-token-review: the encrypted httpOnly cookie model for a public BYO-keys demo; TOKEN_ENCRYPTION_KEY default-key risk (plan section 9); confirm no secret can be logged or returned to the client.",
+      "demo-mode parity: confirm DEMO_MODE=true with zero credentials stays fully usable and the AI fallback path stays shape-identical (plan section 8).",
+      "spec drift: approve or reject the two staged spec edits in plan section 7 (product.md capability + acceptance line; ai-features.md clarification). Per specs-first, these land before implement once approved.",
+      "scope decision: approve the single-cooperation cross-domain scope (plan section 6/15) with email-integration as lead implementer and frontend-ux + ai-features files plan-authorized, or bounce to plan_refine to split.",
+      "provider-adapter-design: confirm no MailProviderAdapter contract change; the refresh-credential threading (C-6) stays behind the registry.",
+      "the getAppUrl()/VERCEL_URL fix (C-7) and the redirect-URI correctness."
+    ],
+    "constraints": ["read-only across the repo", "demo-mode parity preserved", "no spec drift beyond the two staged edits"],
+    "sandbox": "read-only"
+  },
+  "artifacts": {
+    "produced": [".cooperations/evidence/coop-20260516-120043-byc/plan.md"],
+    "consumed": [".cooperations/evidence/coop-20260516-120043-byc/plan.md"]
+  },
+  "metadata": {
+    "phase": "claude_review",
+    "next_phase": "implement",
+    "next_checkpoint": "review_check"
+  }
+}

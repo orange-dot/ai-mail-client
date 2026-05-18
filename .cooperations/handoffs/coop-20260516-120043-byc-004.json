@@ -1,0 +1,32 @@
+{
+  "task_id": "coop-20260516-120043-byc",
+  "timestamp": "2026-05-16T12:00:43Z",
+  "from_role": "implementer",
+  "to_role": "test-runner",
+  "context": {
+    "task_description": "Bring-your-own-credentials for the deployed demo: graceful missing-credential handling + in-app entry of Google OAuth client ID/secret and Anthropic API key, encrypted per-browser cookie, no DB, demo-mode parity preserved.",
+    "implement_verdict": "code landed; npm run check + npm run build green",
+    "requirements": [
+      "Re-run npm run check (lint + typecheck + vitest) - must be green; 22 unit tests including the 4 new session-credentials cases.",
+      "Run npm run test:e2e - the demo-mode-parity gate. Confirm the existing inbox suite still passes with no credentials, and the new tests/e2e/setup.spec.ts passes (setup screen opens from ?setup= and from the sidebar; save reports configured status; no secret echoed).",
+      "Confirm demo-mode parity: with DEMO_MODE=true and no credentials, app + AI fallback path stay usable.",
+      "Grep the diff for console.* additions in server paths and for any secret echo in the settings route responses (RC1/RC4)."
+    ],
+    "constraints": ["read-only on src", "may write under tests/ and .cooperations/evidence/coop-20260516-120043-byc/test-report.md"],
+    "sandbox": "read-only",
+    "note": "AI routes with the .env.local ANTHROPIC_API_KEY present will still 400 (that key has no Anthropic credit balance - a pre-existing environment condition documented in coop-20260514-131621-gml/test-report.md). The canonical demo-mode e2e run is with the key unset; the BYO change does not affect that."
+  },
+  "artifacts": {
+    "produced": [".cooperations/evidence/coop-20260516-120043-byc/implement.md"],
+    "consumed": [
+      ".cooperations/evidence/coop-20260516-120043-byc/plan.md",
+      ".cooperations/evidence/coop-20260516-120043-byc/claude-review.md",
+      ".cooperations/evidence/coop-20260516-120043-byc/implement.md"
+    ]
+  },
+  "metadata": {
+    "phase": "test",
+    "next_phase": "claude_final",
+    "next_checkpoint": "final_check"
+  }
+}

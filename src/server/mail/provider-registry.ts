@@ -1,5 +1,6 @@
 import type { MailAddress, MailProvider } from "@/lib/types";
 import { refreshOAuthToken } from "../auth/oauth";
+import { resolveGoogleCredentials } from "../config/session-credentials";
 import { listAccounts, saveAccount } from "../db/repository";
 import { decryptSecret, encryptSecret } from "../security/crypto";
 import { GmailAdapter } from "./adapters/gmail";
@@ -60,12 +61,15 @@ function requireSender(from: MailAddress | undefined): MailAddress {
 // Builds the refresh-on-401 callback for the Gmail adapter. The refresh token
 // never leaves this server module; the rotated credential is re-encrypted and
 // persisted through the repository so later requests reuse it. No token text is
-// returned to callers or placed in errors.
+// returned to callers or placed in errors. The OAuth app credentials are
+// resolved per request (BYO session value, then server env) inside the
+// closure, which runs within an API route's request scope.
 function buildGmailRefresher(accountId: string, refreshToken: string): () => Promise<string> {
   let currentRefreshToken = refreshToken;
 
   return async () => {
-    const refreshed = await refreshOAuthToken("gmail", currentRefreshToken).catch(() => {
+    const oauthApp = await resolveGoogleCredentials();
+    const refreshed = await refreshOAuthToken("gmail", currentRefreshToken, oauthApp).catch(() => {
       throw new Error("Gmail authorization expired. Reconnect the account.");
     });
 

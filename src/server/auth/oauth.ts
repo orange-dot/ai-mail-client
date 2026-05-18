@@ -2,6 +2,11 @@ import type { MailProvider } from "@/lib/types";
 
 type OAuthProvider = Extract<MailProvider, "gmail" | "microsoft365">;
 
+// OAuth *app* credentials (client id + secret), resolved by the caller from
+// the per-session BYO store or server environment. Distinct from a connected
+// account's access/refresh tokens.
+export type OAuthAppCredentials = { clientId?: string; clientSecret?: string };
+
 type TokenResponse = {
   access_token: string;
   refresh_token?: string;
@@ -10,6 +15,19 @@ type TokenResponse = {
   token_type?: string;
   id_token?: string;
 };
+
+// Thrown when an OAuth app client id / secret is not configured. Callers catch
+// this specific type to redirect to the in-app setup screen instead of
+// surfacing a raw error.
+export class MissingCredentialsError extends Error {
+  readonly provider: OAuthProvider;
+
+  constructor(provider: OAuthProvider) {
+    super(`${provider} OAuth credentials are not configured`);
+    this.name = "MissingCredentialsError";
+    this.provider = provider;
+  }
+}
 
 const googleScopes = [
   "openid",
@@ -22,17 +40,24 @@ const googleScopes = [
 const microsoftScopes = ["offline_access", "User.Read", "Mail.ReadWrite", "Mail.Send"];
 
 export function getAppUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL ?? "http://127.0.0.1:3000";
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
+  // Vercel injects VERCEL_URL (host only, no scheme) for every deployment, so
+  // the OAuth redirect_uri resolves correctly without manual configuration.
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://127.0.0.1:3000";
 }
 
 export function oauthRedirectUri(provider: OAuthProvider): string {
   return `${getAppUrl()}/api/connect/${provider}/callback`;
 }
 
-export function buildOAuthUrl(provider: OAuthProvider, state: string): string {
+export function buildOAuthUrl(provider: OAuthProvider, state: string, credentials: OAuthAppCredentials): string {
+  const clientId = credentials.clientId;
+  if (!clientId) throw new MissingCredentialsError(provider);
+
   if (provider === "gmail") {
     const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
-    url.searchParams.set("client_id", requiredEnv("GOOGLE_CLIENT_ID"));
+    url.searchParams.set("client_id", clientId);
     url.searchParams.set("redirect_uri", oauthRedirectUri(provider));
     url.searchParams.set("response_type", "code");
     url.searchParams.set("access_type", "offline");
@@ -43,7 +68,7 @@ export function buildOAuthUrl(provider: OAuthProvider, state: string): string {
   }
 
   const url = new URL("https://login.microsoftonline.com/common/oauth2/v2.0/authorize");
-  url.searchParams.set("client_id", requiredEnv("MICROSOFT_CLIENT_ID"));
+  url.searchParams.set("client_id", clientId);
   url.searchParams.set("redirect_uri", oauthRedirectUri(provider));
   url.searchParams.set("response_type", "code");
   url.searchParams.set("response_mode", "query");
@@ -52,25 +77,21 @@ export function buildOAuthUrl(provider: OAuthProvider, state: string): string {
   return url.toString();
 }
 
-export async function exchangeOAuthCode(provider: OAuthProvider, code: string): Promise<TokenResponse> {
+export async function exchangeOAuthCode(
+  provider: OAuthProvider,
+  code: string,
+  credentials: OAuthAppCredentials
+): Promise<TokenResponse> {
+  const { clientId, clientSecret } = requireAppCredentials(provider, credentials);
+
   const body = new URLSearchParams();
   body.set("code", code);
   body.set("redirect_uri", oauthRedirectUri(provider));
   body.set("grant_type", "authorization_code");
+  body.set("client_id", clientId);
+  body.set("client_secret", clientSecret);
 
-  let endpoint: string;
-
-  if (provider === "gmail") {
-    endpoint = "https://oauth2.googleapis.com/token";
-    body.set("client_id", requiredEnv("GOOGLE_CLIENT_ID"));
-    body.set("client_secret", requiredEnv("GOOGLE_CLIENT_SECRET"));
-  } else {
-    endpoint = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
-    body.set("client_id", requiredEnv("MICROSOFT_CLIENT_ID"));
-    body.set("client_secret", requiredEnv("MICROSOFT_CLIENT_SECRET"));
-  }
-
-  const response = await fetch(endpoint, {
+  const response = await fetch(tokenEndpoint(provider), {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body
@@ -83,24 +104,20 @@ export async function exchangeOAuthCode(provider: OAuthProvider, code: string): 
   return response.json() as Promise<TokenResponse>;
 }
 
-export async function refreshOAuthToken(provider: OAuthProvider, refreshToken: string): Promise<TokenResponse> {
+export async function refreshOAuthToken(
+  provider: OAuthProvider,
+  refreshToken: string,
+  credentials: OAuthAppCredentials
+): Promise<TokenResponse> {
+  const { clientId, clientSecret } = requireAppCredentials(provider, credentials);
+
   const body = new URLSearchParams();
   body.set("refresh_token", refreshToken);
   body.set("grant_type", "refresh_token");
+  body.set("client_id", clientId);
+  body.set("client_secret", clientSecret);
 
-  let endpoint: string;
-
-  if (provider === "gmail") {
-    endpoint = "https://oauth2.googleapis.com/token";
-    body.set("client_id", requiredEnv("GOOGLE_CLIENT_ID"));
-    body.set("client_secret", requiredEnv("GOOGLE_CLIENT_SECRET"));
-  } else {
-    endpoint = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
-    body.set("client_id", requiredEnv("MICROSOFT_CLIENT_ID"));
-    body.set("client_secret", requiredEnv("MICROSOFT_CLIENT_SECRET"));
-  }
-
-  const response = await fetch(endpoint, {
+  const response = await fetch(tokenEndpoint(provider), {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body
@@ -113,7 +130,10 @@ export async function refreshOAuthToken(provider: OAuthProvider, refreshToken: s
   return response.json() as Promise<TokenResponse>;
 }
 
-export async function fetchOAuthProfile(provider: OAuthProvider, accessToken: string): Promise<{ email: string; name: string }> {
+export async function fetchOAuthProfile(
+  provider: OAuthProvider,
+  accessToken: string
+): Promise<{ email: string; name: string }> {
   const endpoint =
     provider === "gmail"
       ? "https://www.googleapis.com/oauth2/v2/userinfo"
@@ -134,8 +154,18 @@ export async function fetchOAuthProfile(provider: OAuthProvider, accessToken: st
   };
 }
 
-function requiredEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`${name} is required`);
-  return value;
+function tokenEndpoint(provider: OAuthProvider): string {
+  return provider === "gmail"
+    ? "https://oauth2.googleapis.com/token"
+    : "https://login.microsoftonline.com/common/oauth2/v2.0/token";
+}
+
+function requireAppCredentials(
+  provider: OAuthProvider,
+  credentials: OAuthAppCredentials
+): { clientId: string; clientSecret: string } {
+  if (!credentials.clientId || !credentials.clientSecret) {
+    throw new MissingCredentialsError(provider);
+  }
+  return { clientId: credentials.clientId, clientSecret: credentials.clientSecret };
 }

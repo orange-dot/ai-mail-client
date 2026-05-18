@@ -12,6 +12,7 @@ Build a mobile-ready AI-first universal email client PWA for Gmail, Office 365, 
 - Search across normalized message fields.
 - AI summary, AI reply draft, and AI priority scoring.
 - PWA installability and responsive mobile/desktop layout.
+- Runtime credential entry: provider OAuth app credentials and the AI provider key may be supplied in-app, encrypted per browser session, so a credential-free deployment stays usable.
 
 ## Out Of Scope
 
@@ -26,6 +27,7 @@ Build a mobile-ready AI-first universal email client PWA for Gmail, Office 365, 
 - App loads directly into the inbox.
 - Demo mode works without provider credentials.
 - Real provider mode has Gmail OAuth, Microsoft OAuth, and IMAP/SMTP connection paths.
+- Missing provider or AI credentials surface an in-app setup screen, never a raw error response.
 - All provider actions route through the adapter contract.
 - AI drafts are review-only and never auto-send.
 - Unit tests cover security, filtering, MIME, and priority behavior.

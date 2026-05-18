@@ -4,19 +4,23 @@ import { buildFallbackSummary } from "./summary-fallback";
 
 const model = process.env.ANTHROPIC_MODEL ?? "claude-3-5-sonnet-latest";
 
-export async function summarizeMessage(message: EmailMessage): Promise<string> {
-  if (!process.env.ANTHROPIC_API_KEY) {
+// The API key is resolved by the caller (per-session BYO value, then server
+// env). When it is absent the deterministic fallback path runs — its output is
+// structurally identical to the model path, so the UI cannot tell them apart.
+export async function summarizeMessage(message: EmailMessage, apiKey?: string): Promise<string> {
+  if (!apiKey) {
     return buildFallbackSummary(message);
   }
 
   const text = await callAnthropic(
-    `Summarize this email in one or two concise sentences. Identify the sender's intent, the specific action requested, and any deadline. If no action or deadline is present, say so briefly.\n\nSubject: ${message.subject}\nFrom: ${message.from.email}\nBody:\n${message.bodyText.slice(0, 6000)}`
+    `Summarize this email in one or two concise sentences. Identify the sender's intent, the specific action requested, and any deadline. If no action or deadline is present, say so briefly.\n\nSubject: ${message.subject}\nFrom: ${message.from.email}\nBody:\n${message.bodyText.slice(0, 6000)}`,
+    apiKey
   );
   return text.trim();
 }
 
-export async function draftReply(request: AiDraftRequest): Promise<AiDraftResponse> {
-  if (!process.env.ANTHROPIC_API_KEY) {
+export async function draftReply(request: AiDraftRequest, apiKey?: string): Promise<AiDraftResponse> {
+  if (!apiKey) {
     return fallbackDraft(request);
   }
 
@@ -25,7 +29,8 @@ export async function draftReply(request: AiDraftRequest): Promise<AiDraftRespon
       `User instruction: ${request.instruction ?? "Respond helpfully."}\n\n` +
       `Original subject: ${request.message.subject}\n` +
       `Original sender: ${request.message.from.email}\n` +
-      `Original body:\n${request.message.bodyText.slice(0, 6000)}`
+      `Original body:\n${request.message.bodyText.slice(0, 6000)}`,
+    apiKey
   );
 
   return {
@@ -50,12 +55,12 @@ export async function prioritizeMessages(messages: EmailMessage[]): Promise<Emai
   });
 }
 
-async function callAnthropic(prompt: string): Promise<string> {
+async function callAnthropic(prompt: string, apiKey: string): Promise<string> {
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      "x-api-key": process.env.ANTHROPIC_API_KEY ?? "",
+      "x-api-key": apiKey,
       "anthropic-version": "2023-06-01"
     },
     body: JSON.stringify({

@@ -12,6 +12,10 @@ Generate a reply draft in the user's selected tone. Drafts are inserted into com
 
 Score messages as `urgent`, `high`, `normal`, or `low` using sender, deadline language, direct requests, unread state, and thread recency. Anthropic is used in production when configured. Deterministic scoring is used as fallback and in tests.
 
+## Configuration
+
+The Anthropic API key may come from server environment configuration or from an in-app, per-browser-session entry. "Configured" in this spec means either source is present. When no key is available from either source, the deterministic fallback path is used.
+
 ## Privacy
 
-Only the selected message content is sent to the AI provider for summary/draft. Bulk prioritization sends minimal subject, sender, snippet, labels, and dates.
+Only the selected message content is sent to the AI provider for summary/draft. Bulk prioritization sends minimal subject, sender, snippet, labels, and dates. A session-supplied AI key is used only to call the AI provider; it is never logged and never returned to the client.

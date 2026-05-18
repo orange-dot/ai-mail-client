@@ -1,6 +1,13 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { exchangeOAuthCode, fetchOAuthProfile, getAppUrl } from "@/server/auth/oauth";
+import {
+  exchangeOAuthCode,
+  fetchOAuthProfile,
+  getAppUrl,
+  MissingCredentialsError,
+  type OAuthAppCredentials
+} from "@/server/auth/oauth";
+import { resolveGoogleCredentials } from "@/server/config/session-credentials";
 import { saveAccount } from "@/server/db/repository";
 import { apiError } from "@/server/http";
 import type { ProviderCredentials } from "@/server/mail/adapters/types";
@@ -34,12 +41,29 @@ export async function GET(request: NextRequest, { params }: Params) {
       return apiError(new Error("Invalid OAuth callback state"), 400);
     }
 
-    const token = await exchangeOAuthCode(provider, code);
-    const profile = await fetchOAuthProfile(provider, token.access_token);
-    const credentials: ProviderCredentials =
+    const credentials: OAuthAppCredentials =
       provider === "gmail"
-        ? { provider, accessToken: token.access_token, refreshToken: token.refresh_token }
-        : { provider, accessToken: token.access_token, refreshToken: token.refresh_token };
+        ? await resolveGoogleCredentials()
+        : { clientId: process.env.MICROSOFT_CLIENT_ID, clientSecret: process.env.MICROSOFT_CLIENT_SECRET };
+
+    let token;
+    try {
+      token = await exchangeOAuthCode(provider, code, credentials);
+    } catch (error) {
+      // App credentials went missing between connect and callback (e.g. the
+      // BYO cookie expired): route back to the setup screen, not a raw error.
+      if (error instanceof MissingCredentialsError) {
+        cookieStore.delete("oauth_state");
+        return NextResponse.redirect(`${getAppUrl()}/?setup=${provider}&reason=missing-credentials`);
+      }
+      throw error;
+    }
+
+    const profile = await fetchOAuthProfile(provider, token.access_token);
+    const providerCredentials: ProviderCredentials =
+      provider === "gmail"
+        ? { provider: "gmail", accessToken: token.access_token, refreshToken: token.refresh_token }
+        : { provider: "microsoft365", accessToken: token.access_token, refreshToken: token.refresh_token };
 
     await saveAccount({
       id: `${provider}:${profile.email}`,
@@ -47,7 +71,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       address: profile.email,
       displayName: profile.name,
       color: provider === "gmail" ? "#2f6f64" : "#d95f43",
-      encryptedCredential: encryptSecret(JSON.stringify(credentials)),
+      encryptedCredential: encryptSecret(JSON.stringify(providerCredentials)),
       lastSyncedAt: new Date().toISOString()
     });
 

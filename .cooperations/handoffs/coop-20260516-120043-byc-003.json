@@ -1,0 +1,37 @@
+{
+  "task_id": "coop-20260516-120043-byc",
+  "timestamp": "2026-05-16T12:00:43Z",
+  "from_role": "reviewer",
+  "to_role": "implementer",
+  "context": {
+    "task_description": "Bring-your-own-credentials for the deployed demo: graceful missing-credential handling + in-app entry of Google OAuth client ID/secret and Anthropic API key, encrypted per-browser cookie, no DB, demo-mode parity preserved.",
+    "review_verdict": "review_check approve",
+    "lead_implementer": "email-integration",
+    "cross_domain_authorized": "frontend-ux files (src/components/MailApp.tsx, src/app/globals.css) and ai-features files (src/server/ai/anthropic.ts, src/app/api/ai/summary/route.ts, src/app/api/ai/draft/route.ts) are plan-authorized for this single cooperation.",
+    "spec_edits_landed": "Architect landed the two approved spec edits before implement: specs/product.md (runtime credential entry capability + setup-screen acceptance line) and specs/ai-features.md (new Configuration section + Privacy reaffirmation). No further spec edits permitted in the implement phase.",
+    "conditions": [
+      "RC1 (binding): settings route GET/POST/DELETE responses return only redacted booleans; no stored secret in any response; setup form fields are write-only, never pre-filled with stored secrets.",
+      "RC2 (binding): readSessionCredentials() never throws - missing/tampered/wrong-version cookie yields {}; no route 500s on a bad byo_credentials cookie.",
+      "RC3 (binding): MissingCredentialsError is a distinct typed error; connect/callback routes redirect to setup ONLY on that type; genuine errors (bad OAuth state, token-exchange failure, network) still return real errors.",
+      "RC4 (binding): cookie is httpOnly + secure + sameSite=lax; no console.* of any credential/token/cookie value; generic error messages only.",
+      "RC5 (binding): anthropic.ts fallback gate becomes !apiKey with apiKey resolved session ?? env, applied identically in summary and draft routes; real-path and fallback-path output objects stay structurally identical.",
+      "RC6 (advisory): route the Microsoft 365 env-missing path through MissingCredentialsError too so it gets a graceful redirect; if left as raw JSON, state that explicitly in implement.md.",
+      "RC7 (advisory): setup screen shows a non-blocking warning when the server reports TOKEN_ENCRYPTION_KEY is unset/default, via a boolean only; crypto.ts consumed unchanged.",
+      "RC8 (advisory): spec edits already landed; do not edit specs/ further."
+    ],
+    "constraints": ["workspace-write on src/ and tests/", "demo-mode parity preserved", "no MailProviderAdapter contract change", "no AI output-shape change"],
+    "sandbox": "workspace-write"
+  },
+  "artifacts": {
+    "produced": [".cooperations/evidence/coop-20260516-120043-byc/claude-review.md"],
+    "consumed": [
+      ".cooperations/evidence/coop-20260516-120043-byc/plan.md",
+      ".cooperations/evidence/coop-20260516-120043-byc/claude-review.md"
+    ]
+  },
+  "metadata": {
+    "phase": "implement",
+    "next_phase": "test",
+    "next_checkpoint": null
+  }
+}

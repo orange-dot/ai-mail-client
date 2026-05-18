@@ -27,11 +27,13 @@
       "id": "coop-20260514-131621-gml",
       "description": "End-to-end verify Gmail integration against user's personal account; produce OAuth-app setup checklist; fix gaps; demo-mode parity preserved.",
       "created_at": "2026-05-14T13:16:21Z",
-      "status": "in_progress",
-      "current_phase": "claude_final",
-      "current_role": "reviewer",
+      "completed_at": "2026-05-16T12:00:43Z",
+      "status": "done",
+      "current_phase": "done",
+      "current_role": "system",
       "sandbox": "read-only",
       "planned_implementer": "email-integration",
+      "close_out": "path B (code-only). claude_final approved the diff; acceptance #2 (real-Gmail manual smoke) carried forward to coop-20260516-120043-byc, which makes real-Gmail testing possible on the Vercel deploy.",
       "user_choices": {
         "scope": "end-to-end verify + fix gaps",
         "oauth_app_state": "not registered; planner produces setup checklist",
@@ -39,7 +41,8 @@
       },
       "checkpoints": [
         { "gate": "plan_check", "decision": "approve", "timestamp": "2026-05-14T13:30:00Z" },
-        { "gate": "review_check", "decision": "approve", "timestamp": "2026-05-15T10:30:00Z" }
+        { "gate": "review_check", "decision": "approve", "timestamp": "2026-05-15T10:30:00Z" },
+        { "gate": "final_check", "decision": "approve", "timestamp": "2026-05-16T12:00:43Z" }
       ],
       "recent_handoffs": [
         { "seq": 1, "from_role": "system", "to_role": "architect", "timestamp": "2026-05-14T13:16:21Z" },
@@ -47,6 +50,26 @@
         { "seq": 3, "from_role": "reviewer", "to_role": "implementer", "timestamp": "2026-05-15T10:30:00Z" },
         { "seq": 4, "from_role": "implementer", "to_role": "test-runner", "timestamp": "2026-05-15T12:10:00Z" },
         { "seq": 5, "from_role": "test-runner", "to_role": "reviewer", "timestamp": "2026-05-16T13:30:00Z" }
+      ]
+    },
+    {
+      "id": "coop-20260516-120043-byc",
+      "description": "Bring-your-own-credentials for the deployed demo: replace the raw \"GOOGLE_CLIENT_ID is required\" JSON error with graceful handling, and add an in-app way for a demo visitor to enter their own Google OAuth client ID + secret and their own Anthropic API key, stored encrypted per browser session (no DB), preserving demo-mode parity.",
+      "created_at": "2026-05-16T12:00:43Z",
+      "status": "in_progress",
+      "current_phase": "test",
+      "current_role": "test-runner",
+      "sandbox": "read-only",
+      "planned_implementer": "email-integration",
+      "checkpoints": [
+        { "gate": "plan_check", "decision": "approve", "timestamp": "2026-05-16T12:00:43Z" },
+        { "gate": "review_check", "decision": "approve", "timestamp": "2026-05-16T12:00:43Z" }
+      ],
+      "recent_handoffs": [
+        { "seq": 1, "from_role": "system", "to_role": "architect", "timestamp": "2026-05-16T12:00:43Z" },
+        { "seq": 2, "from_role": "architect", "to_role": "reviewer", "timestamp": "2026-05-16T12:00:43Z" },
+        { "seq": 3, "from_role": "reviewer", "to_role": "implementer", "timestamp": "2026-05-16T12:00:43Z" },
+        { "seq": 4, "from_role": "implementer", "to_role": "test-runner", "timestamp": "2026-05-16T12:00:43Z" }
       ]
     }
   ]

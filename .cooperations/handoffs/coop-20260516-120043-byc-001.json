@@ -1,0 +1,39 @@
+{
+  "task_id": "coop-20260516-120043-byc",
+  "timestamp": "2026-05-16T12:00:43Z",
+  "from_role": "system",
+  "to_role": "architect",
+  "context": {
+    "task_description": "Bring-your-own-credentials for the deployed demo: replace the raw \"GOOGLE_CLIENT_ID is required\" JSON error with graceful handling, and add an in-app way for a demo visitor to enter their own Google OAuth client ID + secret and their own Anthropic API key, stored encrypted per browser session (no DB), preserving demo-mode parity.",
+    "trigger": "User deployed the dev branch to Vercel (ai-mail-client-tawny.vercel.app). Clicking Connect Gmail hits /api/connect/gmail and returns a raw JSON error {\"error\":{\"code\":\"request_error\",\"message\":\"GOOGLE_CLIENT_ID is required\"}} because GOOGLE_CLIENT_ID is not set as a Vercel env var. ANTHROPIC_API_KEY is also unset on the deploy. Intent: this is a public demo where each visitor should plug in their own credentials and try the app.",
+    "requirements": [
+      "Replace the raw JSON error path on /api/connect/[provider] (and any sibling route that 500s/400s on missing GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET) with a graceful redirect to an in-app credentials screen.",
+      "Provide an in-app UI surface for a visitor to enter their own Google OAuth client ID + client secret.",
+      "Provide an in-app UI surface for a visitor to enter their own Anthropic API key.",
+      "Persist entered credentials encrypted, per browser session, with no database (Vercel serverless is stateless) - candidate: httpOnly cookie encrypted via src/server/security/crypto.ts using TOKEN_ENCRYPTION_KEY.",
+      "Server code that reads GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / ANTHROPIC_API_KEY (src/server/auth/oauth.ts, src/server/ai/anthropic.ts) must prefer the per-session entered value, then fall back to the env var.",
+      "Show the visitor what to register in Google Cloud Console for this deploy: the exact redirect URI is <deploy-origin>/api/connect/gmail/callback (e.g. https://ai-mail-client-tawny.vercel.app/api/connect/gmail/callback).",
+      "Preserve demo-mode parity: with DEMO_MODE=true and no credentials at all, the app stays fully usable on demo data; the AI deterministic fallback path still runs when no Anthropic key is present."
+    ],
+    "constraints": [
+      "demo-mode parity preserved",
+      "no spec drift - if specs/product.md, specs/ai-features.md, or specs/email-adapters.md must change to cover a credentials/settings surface, the product-planner stages that spec edit in this same cooperation before implement, and the reviewer approves it",
+      "security-token-review applies: entered OAuth client secret and Anthropic API key must be encrypted at rest, never logged, HTTPS-only, httpOnly cookie; the planner must address how a user-supplied client secret reaches the OAuth callback safely",
+      "TOKEN_ENCRYPTION_KEY must be present on the Vercel deploy for encryption to work - the plan must call out this deployment prerequisite",
+      "AI endpoints must not send mail (unchanged invariant)"
+    ],
+    "open_design_questions_for_plan": [
+      "Storage model: encrypted httpOnly cookie vs. other - recommend and justify; note Vercel serverless statelessness.",
+      "Single implementer for the implement phase, or does the cross-domain scope (frontend-ux UI + email-integration connect/auth + ai-features Anthropic key) require splitting into more than one cooperation? Decide and record in the plan.",
+      "Whether the entered Google credential should also encrypt/scope the existing per-account ProviderCredentials flow, or stay a separate session-level 'app credentials' concept."
+    ],
+    "files_in_scope": ["specs/product.md", "specs/email-adapters.md", "specs/ai-features.md"],
+    "sandbox": "read-only"
+  },
+  "artifacts": {"produced": [], "consumed": []},
+  "metadata": {
+    "phase": "plan",
+    "next_phase": "claude_review",
+    "next_checkpoint": "plan_check"
+  }
+}

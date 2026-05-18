@@ -24,7 +24,7 @@ Each skill is a directory with a `SKILL.md` that includes YAML frontmatter (`nam
 | `provider-adapter-design` | Edits to `src/server/mail/adapters/`, `src/server/auth/oauth.ts`, `src/app/api/{connect,mail}/`. |
 | `mobile-pwa-review` | Edits to `src/components/MailApp.tsx`, `src/app/layout.tsx`, `src/app/globals.css`, `public/manifest.webmanifest`, `public/sw.js`. |
 | `ai-email-triage` | Edits to `src/server/ai/`, `src/app/api/ai/`. |
-| `security-token-review` | Edits to `src/server/security/crypto.ts`, `src/server/auth/oauth.ts`, `.env.example`, `next.config.mjs`, `src/app/api/connect/`. |
+| `security-token-review` | Edits to `src/server/security/crypto.ts`, `src/server/auth/oauth.ts`, `.env.example`, `next.config.mjs`, `src/app/api/connect/`, `src/app/api/settings/credentials/`. |
 | `handoff-discipline` | Every role transition. |
 | `spec-drift-guard` | `claude_review`, `claude_final`, manual `/spec-check`. |
 | `smoke-path-mail` | `test` phase; manual `/mail-smoke`. |
@@ -70,11 +70,19 @@ Always-on invariants:
 
 - Claude Code CLI for the local cooperation mob workflow.
 - Local plugin bundle at `plugins/cooperation-mob/` mirrors the artifact set for portability to other projects or to the lab `plugins/` marketplace.
+- The project-local plugin bundle includes the cooperation commands, core mob agents, phase/rule skills, and hooks needed to replay the handoff/checkpoint workflow outside this repo.
 - GitHub for source handoff and Vercel import (real-mode deploys only).
 - Vercel for hosting and Postgres integration.
 - Playwright for mobile/desktop workflow tests.
 - Vitest for unit and integration tests.
 - Anthropic API for deployed AI features (server-only).
+
+## Claude Code Discipline
+
+- Planning, implementation, review, and test ownership are separated by agent role instead of being handled as one undifferentiated coding pass.
+- Hooks enforce workflow hygiene before risky actions: spec drift checks before edits, handoff validation before source changes, test/deploy guards before commands, and secret scanning before commits.
+- Skills encode the highest-risk review lenses: provider adapter boundaries, token handling, AI fallback parity, mobile PWA behavior, and evidence packaging.
+- `.cooperations/tasks.json` and `.cooperations/handoffs/*.json` provide an auditable trail for what was planned, who owned the next phase, and which constraints were carried forward.
 
 ## Runtime state (`.cooperations/`)
 

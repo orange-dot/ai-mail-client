@@ -68,7 +68,7 @@ npm install
 
 # Every session
 npm run env:check        # SessionStart hook also calls this
-npm run dev              # local server on http://127.0.0.1:3001
+npm run dev              # local server on http://127.0.0.1:3000
 
 # Before any handoff out of implement
 npm run check            # lint + typecheck + vitest
@@ -77,6 +77,7 @@ npm run test:e2e         # Playwright mobile + desktop, when UI changes
 # Before claude_final approve
 npm run check
 npm run test:e2e
+npm run build
 ```
 
 ## Deployment loop (Vercel)
@@ -87,9 +88,10 @@ git push origin dev
 # Import the GitHub repo in Vercel (per-project, one-time)
 # Set variables from .env.example
 npm run predeploy        # pre-deploy hook surfaces blockers
+npm run build            # production readiness proof
 ```
 
-For `dev` branch the deployment is optional — demo-mode parity is the merge target. Real-mode deployment requires the OAuth and Postgres surface listed in `.env.example`.
+The current live review deploy is https://ai-mail-client-tawny.vercel.app. It can run in demo mode without OAuth, Postgres, or Anthropic env vars. For real shared-provider mode, configure the OAuth, Postgres, encryption, and Anthropic variables listed in `.env.example`; for reviewer BYO mode, the setup screen stores Google and Anthropic credentials per browser in an encrypted httpOnly cookie.
 
 ## Reference
 

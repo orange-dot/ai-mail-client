@@ -2,6 +2,16 @@
 
 AI-first universal email client PWA for the assignment.
 
+## Live Delivery
+
+- Live Vercel app: https://ai-mail-client-tawny.vercel.app
+- Repository: https://github.com/orange-dot/ai-mail-client
+- Claude Code discipline: [CLAUDE.md](CLAUDE.md)
+- One-page architecture: [docs/architecture.md](docs/architecture.md)
+- Agents, skills, hooks, plugins: [docs/agents-skills-hooks-plugins.md](docs/agents-skills-hooks-plugins.md)
+- Workflow writeup: [docs/workflow.md](docs/workflow.md)
+- Final submission summary: [docs/final-delivery-template.md](docs/final-delivery-template.md)
+
 ## Local Commands
 
 - `npm install`
@@ -18,4 +28,4 @@ Import the GitHub repo into Vercel, set the variables from `.env.example`, and u
 - Install command: `npm install`
 - Output: Next.js default
 
-The UI is usable in `DEMO_MODE=true`. Real Gmail, Office 365, IMAP, and Anthropic behavior activates when the provider credentials and database URL are present.
+The UI is usable in `DEMO_MODE=true` with no external services. Gmail and Anthropic can also be tried on a credential-free deploy through the in-app setup screen: each visitor supplies their own Google OAuth app credentials and Anthropic API key, stored in an encrypted per-browser httpOnly cookie. Server environment variables remain the preferred production path for shared real-mode deployments.

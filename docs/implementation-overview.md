@@ -9,6 +9,7 @@ Conductor Mail is a Next.js + TypeScript mobile-ready PWA for an AI-first univer
 - Search, labels, archive, delete, read/unread state, compose, reply, and forward UX.
 - AI summaries, AI reply drafts, and AI prioritization.
 - Demo-mode mailbox so the app is usable before real provider credentials exist.
+- In-app BYO setup for reviewer-supplied Google OAuth app credentials and Anthropic API keys on a credential-free deploy.
 - Real backend adapter boundaries for Gmail API, Microsoft Graph Mail, IMAP, SMTP, and Anthropic.
 - Claude Code / Agent OS deliverables: `CLAUDE.md`, specs, architecture doc, workflow doc, agents, skills, hooks, tests, and Vercel config.
 
@@ -21,7 +22,7 @@ workspace/product/ai-mail-client
 Local dev server currently runs on:
 
 ```text
-http://127.0.0.1:3001
+http://127.0.0.1:3000
 ```
 
 ## Specs-Driven Development Flow
@@ -433,6 +434,8 @@ DEMO_MODE=true
 ANTHROPIC_API_KEY=<optional, enables real AI>
 ANTHROPIC_MODEL=claude-sonnet-4-20250514
 ```
+
+For public BYO review mode, leave Google and Anthropic env vars unset and use the in-app setup screen. Entered Google and Anthropic credentials are encrypted per browser in an httpOnly cookie; shared deployments should still set a real `TOKEN_ENCRYPTION_KEY`.
 
 ## Current Limitations
 
